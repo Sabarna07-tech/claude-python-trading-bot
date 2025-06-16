@@ -1,0 +1,4 @@
+python-dotenv
+kiteconnect==5.0.1
+pydantic
+# mcp-sdk
