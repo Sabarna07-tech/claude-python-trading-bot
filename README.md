@@ -1,74 +1,155 @@
-AI Trading Bot with Claude and Python (Official SDK)
-This project is a Python implementation of an AI-powered trading bot that connects the Claude Large Language Model (LLM) to a Zerodha trading account. It uses the official Model Context Protocol (MCP) Python SDK to expose trading functions as "tools" that Claude can understand and execute based on natural language commands.
+# 🤖 Claude-Python Trading Bot
 
-🔴 DISCLAIMER: This is for educational purposes only. Trading bots carry a high risk of financial loss. Do not use with real money without fully understanding the code and risks.
+This project is a **Python implementation of an AI-powered trading bot** that connects the **Claude Large Language Model (LLM)** to a **Zerodha trading account**. It leverages the official **Model Context Protocol (MCP) SDK** to expose trading functions as "tools" that Claude can understand and execute using natural language.
 
-Features
-Natural Language Trading: Use plain English in the Claude app to execute trades (e.g., "buy 10 shares of INFY at market price").
+> ⚠️ **DISCLAIMER:**  
+> This bot is for educational purposes only. Trading involves financial risk. Do **NOT** use with real money unless you fully understand the code and accept the risks.
 
-Real-time Data: Fetch and view your current trading positions.
+---
 
-Official SDK: Built with the mcp-sdk for robust and reliable communication with Claude.
+## ✨ Features
 
-Secure: Keeps your API keys and tokens local using a .env file.
+- 🗣 **Natural Language Trading:**  
+  Use plain English to place trades through Claude (e.g., "Buy 10 shares of INFY at market price").
 
-Type-Safe: Uses Pydantic to ensure all data flowing between Claude and the trading API is correctly structured.
+- 🔄 **Real-time Data:**  
+  View your current trading positions and holdings via Claude.
 
-Project Structure
+- ✅ **Official SDK Integration:**  
+  Built with the [mcp-sdk](https://github.com/anthropic/mcp) for reliable Claude communication.
+
+- 🔐 **Secure:**  
+  Keeps API keys and tokens secure using a `.env` file.
+
+- 🧠 **Type-Safe:**  
+  Utilizes [Pydantic](https://docs.pydantic.dev/) for data validation and structure.
+
+---
+
+## 🗂 Project Structure
+
+```
 claude-python-trading-bot/
 │
 ├── src/
-│   ├── main.py             # Main application: MCP server logic using the SDK
-│   ├── schemas.py          # Pydantic schemas for data validation
-│   └── kite_utils.py       # Handles all Zerodha Kite Connect logic
+│   ├── main.py           # Main MCP server logic
+│   ├── kite_utils.py     # Zerodha Kite Connect logic
+│   └── schemas.py        # Pydantic schemas
 │
-├── .env                    # Stores secret API keys
-├── requirements.txt        # Project dependencies
-└── README.md               # This file
+├── .env                  # Secret API keys and tokens (not committed)
+├── requirements.txt      # Python dependencies
+└── README.md             # Project documentation
+```
 
-Setup and Installation
-1. Prerequisites
-Python 3.8+
+---
 
-A Zerodha developer account (developers.kite.trade) with an API key.
+## 🛠 Setup and Installation
 
-The Claude Desktop Application.
+### ✅ Prerequisites
 
-2. Clone and Setup
-# Clone the repository (or set up the files manually)
-git clone <your-repo-url>
-cd claude-python-trading-bot
+- Python 3.8+
+- Zerodha Developer Account: [developers.kite.trade](https://developers.kite.trade/)
+- Claude Desktop Application (with local tool support)
 
-# Create and activate a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+### 🚀 Installation Steps
 
-# Install dependencies from the updated requirements file
-pip install -r requirements.txt
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/claude-python-trading-bot.git
+   cd claude-python-trading-bot
+   ```
 
-3. Configure API Keys & Access Token
-Create .env file: Create a file named .env in the root directory.
+2. **Create a virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-Add Credentials: Open the .env file and add your Zerodha API credentials:
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-KITE_API_KEY="your_api_key"
-KITE_API_SECRET="your_api_secret"
-KITE_ACCESS_TOKEN="your_access_token"
+4. **Configure API Keys & Access Token**
 
-Get Access Token: The access_token must be generated daily. I have provided a separate explanation on how to get this token using a manual login and a helper script. You must update the KITE_ACCESS_TOKEN in your .env file each day.
+   Create a `.env` file in the root directory:
 
-How to Run
-Start the MCP Server:
-Run the main.py script from your terminal. The official SDK will handle the connection.
+   ```
+   KITE_API_KEY="your_api_key"
+   KITE_API_SECRET="your_api_secret"
+   KITE_ACCESS_TOKEN="your_daily_access_token"
+   ```
 
-python src/main.py
+   > 🔁 You must update the `KITE_ACCESS_TOKEN` daily.  
+   > A helper script is included to generate this using manual login.
 
-The server will start and print a message like Starting MCP server, waiting for Claude to connect....
+---
 
-Connect from Claude:
+## ▶️ How to Run
 
-Open the Claude Desktop Application.
+1. **Start the MCP server:**
+   ```bash
+   python src/main.py
+   ```
+   You should see:
+   ```
+   Starting MCP server, waiting for Claude to connect...
+   ```
 
-Go to the settings for using local tools.
+2. **Connect from Claude Desktop App**
 
-Configure it to use the python src/main.py command as the local tool server.
+   - Open Claude Desktop
+   - Go to Settings → Local Tools
+   - Set the command to run the local tool server as:
+     ```bash
+     python src/main.py
+     ```
+
+---
+
+## 📌 Notes
+
+- MCP SDK handles the communication between Claude and your trading tools.
+- The `.env` file should **never** be committed to version control.
+- Ensure your API credentials are correct and updated.
+- Use sandbox/testing mode until you're confident the bot works as expected.
+
+---
+
+## 📜 License
+
+MIT License. See [LICENSE](LICENSE) file for details.
+
+---
+
+## 👨‍💻 Author
+
+Built by _Your Name_.  
+Inspired by the potential of LLMs + real-world trading tools.
+
+---
+
+## 🧪 Example `.env` file
+
+```ini
+KITE_API_KEY="kiteapikey123"
+KITE_API_SECRET="kitesecret456"
+KITE_ACCESS_TOKEN="your_access_token_here"
+```
+
+---
+
+## 🖥️ Example CLI Usage
+
+- **Buy shares via Claude:**  
+  “Buy 10 shares of INFY at market price.”
+
+- **Check portfolio positions:**  
+  “Show me my current holdings.”
+
+- **Sell a stock:**  
+  “Sell 5 shares of TCS at limit price 3600.”
+
+---
+
+Let me know if you'd like to see more CLI usage examples or a sample `.env` file!
