@@ -1,7 +1,14 @@
 # src/kite_utils.py
 import os
+import sys
+from pathlib import Path
 from kiteconnect import KiteConnect
 from dotenv import load_dotenv
+
+# Add the project root directory to the Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from src.schemas import PlaceOrderInput, GetPositionsOutput
 
 # Load environment variables from the .env file

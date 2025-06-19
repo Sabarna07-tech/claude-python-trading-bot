@@ -1,7 +1,16 @@
 # src/main.py
 import asyncio
-from mcp_sdk.mcp import McpServer
-from mcp_sdk.stdio_transport import StdioServerTransport
+from fastapi import FastAPI, HTTPException, Request
+import uvicorn
+import json
+import os
+import sys
+from pathlib import Path
+
+# Add the project root directory to the Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from src.kite_utils import KiteHelper
 from src.schemas import PlaceOrderInput, PlaceOrderOutput, GetPositionsOutput
 
@@ -9,64 +18,93 @@ from src.schemas import PlaceOrderInput, PlaceOrderOutput, GetPositionsOutput
 # Initialize the Kite Helper once when the script starts.
 kite_helper = KiteHelper()
 
-# --- 2. Create the MCP Server ---
-# Use the StdioServerTransport, which allows the Claude desktop app
-# to communicate with this Python script using standard input/output.
-server = McpServer(transport=StdioServerTransport())
-
-# --- 3. Define Tools ---
-# Use the @server.tool decorator to define a function as a tool
-# that the Claude LLM can invoke.
-
-@server.tool(
-    name="placeOrder",
-    description="Places a stock order on the Zerodha trading platform. Use this for buying or selling stocks.",
-    input_schema=PlaceOrderInput,
-    output_schema=PlaceOrderOutput,
+# --- 2. Create the FastAPI Server ---
+app = FastAPI(
+    title="Claude Python Trading Bot",
+    description="An API server to expose Zerodha trading functions for Claude LLM",
+    version="1.0.0",
 )
+
+# --- 3. Define API Endpoints ---
+@app.post("/api/place_order", response_model=PlaceOrderOutput)
 async def place_order(params: PlaceOrderInput):
     """
-    This async function is the handler for the 'placeOrder' tool.
-    The MCP SDK will automatically validate the incoming request against
-    the PlaceOrderInput schema.
+    Places a stock order on the Zerodha trading platform.
     """
-    print(f"Tool 'placeOrder' invoked with params: {params}")
+    print(f"Endpoint 'place_order' invoked with params: {params}")
     try:
-        # The actual API call is synchronous, but we call it from our async handler.
         result = kite_helper.place_order(params)
         return result
     except Exception as e:
-        print(f"An error occurred in the 'placeOrder' tool: {e}")
-        # The SDK will properly handle this exception and report it to the LLM.
-        raise
+        print(f"An error occurred in the 'place_order' endpoint: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@server.tool(
-    name="getPositions",
-    description="Fetches all current open trading positions from the Zerodha account.",
-    output_schema=GetPositionsOutput,
-)
+@app.get("/api/get_positions", response_model=GetPositionsOutput)
 async def get_positions():
     """
-    This async function handles the 'getPositions' tool.
-    It takes no input.
+    Fetches all current open trading positions from the Zerodha account.
     """
-    print("Tool 'getPositions' invoked.")
+    print("Endpoint 'get_positions' invoked.")
     try:
         result = kite_helper.get_positions()
         return result
     except Exception as e:
-        print(f"An error occurred in the 'getPositions' tool: {e}")
-        raise
+        print(f"An error occurred in the 'get_positions' endpoint: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/")
+async def root():
+    """
+    Root endpoint for the API server.
+    """
+    return {
+        "name": "Claude Python Trading Bot API",
+        "version": "1.0.0",
+        "endpoints": [
+            {"path": "/api/place_order", "method": "POST", "description": "Places a stock order"},
+            {"path": "/api/get_positions", "method": "GET", "description": "Gets current positions"}
+        ]
+    }
 
 # --- 4. Start the Server ---
-async def main():
-    """The main entry point to start the server."""
-    print("Starting MCP server, waiting for Claude to connect...")
-    await server.start()
-    print("Server has stopped.")
+def start_server(host="127.0.0.1", port=None):
+    """Start the FastAPI server with uvicorn"""
+    # Try to find an available port if none is specified
+    if port is None:
+        # Try ports 8000 through 8010
+        for p in range(8000, 8011):
+            try:
+                print(f"Starting API server at http://{host}:{p}")
+                uvicorn.run(app, host=host, port=p)
+                break
+            except OSError as e:
+                print(f"Port {p} is not available. Trying next port...")
+                if p == 8010:
+                    print("All ports from 8000 to 8010 are in use. Please free up a port and try again.")
+                    sys.exit(1)
+    else:
+        try:
+            print(f"Starting API server at http://{host}:{port}")
+            uvicorn.run(app, host=host, port=port)
+        except OSError as e:
+            print(f"Error starting server on port {port}: {e}")
+            sys.exit(1)
+
+# For the CLI script
+def main():
+    """Start the server with default settings"""
+    # Can take optional port from command line
+    port = None
+    if len(sys.argv) > 1:
+        try:
+            port = int(sys.argv[1])
+        except ValueError:
+            print(f"Invalid port number: {sys.argv[1]}")
+            sys.exit(1)
+            
+    start_server(port=port)
 
 if __name__ == "__main__":
-    # Run the main async function.
-    # This will start the server and keep it running until interrupted.
-    asyncio.run(main())
+    # Run the main function.
+    main()
 
